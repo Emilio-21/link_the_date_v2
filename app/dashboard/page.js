@@ -24,21 +24,29 @@ export default function DashboardPage() {
 
   const loadData = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) {
         router.push('/login')
         return
       }
-      setUser(user)
+      setUser(session.user)
 
       // Cargar organizaciones
-      const orgsResponse = await fetch('/api/organizations')
+      const orgsResponse = await fetch('/api/organizations', {
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`
+        }
+      })
       const orgsData = await orgsResponse.json()
       setOrganizations(orgsData)
 
       // Cargar eventos
       if (orgsData.length > 0) {
-        const eventsResponse = await fetch('/api/events')
+        const eventsResponse = await fetch('/api/events', {
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`
+          }
+        })
         const eventsData = await eventsResponse.json()
         setEvents(eventsData)
       }
