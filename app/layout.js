@@ -1,13 +1,13 @@
 import './globals.css'
 
 export const metadata = {
-  title: 'Next.js MongoDB Template',
-  description: 'A simple template with App Router, MongoDB, and shadcn/ui',
+  title: 'Link The Date - Crea y comparte tus eventos',
+  description: 'Plataforma para crear eventos importantes y compartirlos con invitados',
 }
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
+    <html lang="es">
       <body>
         {children}
       </body>
