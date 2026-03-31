@@ -6,7 +6,14 @@ import { createClient } from "@supabase/supabase-js";
 
 function supaAdmin() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY; // ← cambio aquí
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) throw new Error("Faltan env vars");
+  return createClient(url, key, { auth: { persistSession: false } });
+}
+
+function supaAnon() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (!url || !key) throw new Error("Faltan env vars");
   return createClient(url, key, { auth: { persistSession: false } });
 }
@@ -20,6 +27,7 @@ export async function GET(req) {
       return NextResponse.json({ error: "Falta token" }, { status: 400 });
     }
 
+    // Guests y RSVPs con service role (tienen RLS)
     const supabase = supaAdmin();
 
     const { data: guest, error: gErr } = await supabase
@@ -31,7 +39,8 @@ export async function GET(req) {
     if (gErr) return NextResponse.json({ error: `Guest query error: ${gErr.message}` }, { status: 500 });
     if (!guest) return NextResponse.json({ error: "Invitación no encontrada" }, { status: 404 });
 
-    const { data: event, error: eErr } = await supabase
+    // Evento con anon key (política pública por slug/id)
+    const { data: event, error: eErr } = await supaAnon()
       .from("events")
       .select(`
         id, org_id, name, event_date, event_datetime, slug,
@@ -49,7 +58,7 @@ export async function GET(req) {
     if (eErr) return NextResponse.json({ error: `Event query error: ${eErr.message}` }, { status: 500 });
     if (!event) return NextResponse.json({ error: "Evento no encontrado" }, { status: 404 });
 
-    // RSVP del invitado
+    // RSVP con service role
     const { data: rsvp } = await supabase
       .from("rsvps")
       .select("guest_id,attending,party_size,updated_at")
@@ -60,4 +69,4 @@ export async function GET(req) {
   } catch (e) {
     return NextResponse.json({ error: e?.message || "Server error" }, { status: 500 });
   }
-}// cache bust Tue Mar 31 17:19:10 CST 2026
+}
