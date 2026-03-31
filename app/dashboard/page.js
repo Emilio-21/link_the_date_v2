@@ -176,7 +176,6 @@ export default function DashboardPage() {
   // ── data ──────────────────────────────────────────────────────────────────
   async function refreshAll(initial=false){
     const{data:rows,error}=await supabase.from("organizations").select("id,name,slug,created_at").order("created_at",{ascending:false});
-    console.log("UPDATE result:", {updated, error});
     if(error){setErrorMsg(error.message);return;}
     const list=rows||[];
     setOrgs(list);
