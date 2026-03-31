@@ -126,6 +126,19 @@ export default function DashboardPage() {
   const [editEventBankAccount, setEditEventBankAccount] = useState("");
   const [busyUpdateEvent, setBusyUpdateEvent]       = useState(false);
 
+  // personalización
+  const [editCoupleName, setEditCoupleName]         = useState("");
+  const [editMainMessage, setEditMainMessage]       = useState("");
+  const [editDressCodeText, setEditDressCodeText]   = useState("");
+  const [editKidsPolicyText, setEditKidsPolicyText] = useState("");
+  const [editGiftLabel1, setEditGiftLabel1]         = useState("");
+  const [editGiftLabel2, setEditGiftLabel2]         = useState("");
+  const [editBankName, setEditBankName]             = useState("");
+  const [editShowDressCode, setEditShowDressCode]   = useState(true);
+  const [editShowKidsPolicy, setEditShowKidsPolicy] = useState(true);
+  const [editShowGifts, setEditShowGifts]           = useState(true);
+  const [editShowBank, setEditShowBank]             = useState(true);
+
   const [errorMsg, setErrorMsg] = useState(null);
   const [toast, setToast]       = useState(null);
 
@@ -174,7 +187,7 @@ export default function DashboardPage() {
 
   async function refreshEventsForOrg(orgId,initial=false){
     const{data:rows,error}=await supabase.from("events")
-      .select("id,org_id,name,event_date,event_datetime,slug,description,location,venue_name,location_url,gift_url_1,gift_url_2,bank_account,created_at")
+      .select("id,org_id,name,event_date,event_datetime,slug,description,location,venue_name,location_url,gift_url_1,gift_url_2,bank_account,couple_name,main_message,dress_code_text,kids_policy_text,gift_label_1,gift_label_2,bank_name,show_dress_code,show_kids_policy,show_gifts,show_bank,created_at")
       .eq("org_id",orgId).order("created_at",{ascending:false});
     if(error){setErrorMsg(error.message);return;}
     const list=rows||[];
@@ -230,7 +243,7 @@ export default function DashboardPage() {
         venue_name:venueName.trim()||null,location_url:locationUrl.trim()||null,
         gift_url_1:giftUrl1.trim()||null,gift_url_2:giftUrl2.trim()||null,
         bank_account:bankAccount.trim()||null,
-      }).select("id,org_id,name,event_date,event_datetime,slug,description,location,venue_name,location_url,gift_url_1,gift_url_2,bank_account,created_at").single();
+      }).select("id,org_id,name,event_date,event_datetime,slug,description,location,venue_name,location_url,gift_url_1,gift_url_2,bank_account,couple_name,main_message,dress_code_text,kids_policy_text,gift_label_1,gift_label_2,bank_name,show_dress_code,show_kids_policy,show_gifts,show_bank,created_at").single();
       if(error){setErrorMsg(error.message);return;}
       setEventTitle("");setEventDateTime("");setEventLocation("");setEventDesc("");
       setVenueName("");setLocationUrl("");setGiftUrl1("");setGiftUrl2("");setBankAccount("");
@@ -302,8 +315,22 @@ export default function DashboardPage() {
     setEditEventDateTime(dtLocal);setEditEventLocation(ev.location??"");setEditEventDesc(ev.description??"");
     setEditEventVenueName(ev.venue_name??"");setEditEventLocationUrl(ev.location_url??"");
     setEditEventGiftUrl1(ev.gift_url_1??"");setEditEventGiftUrl2(ev.gift_url_2??"");setEditEventBankAccount(ev.bank_account??"");
+    // personalización
+    setEditCoupleName(ev.couple_name??"");
+    setEditMainMessage(ev.main_message??"");
+    setEditDressCodeText(ev.dress_code_text??"Formal");
+    setEditKidsPolicyText(ev.kids_policy_text??"Sin niños");
+    setEditGiftLabel1(ev.gift_label_1??"Liverpool");
+    setEditGiftLabel2(ev.gift_label_2??"Amazon");
+    setEditBankName(ev.bank_name??"");
+    setEditShowDressCode(ev.show_dress_code!==false);
+    setEditShowKidsPolicy(ev.show_kids_policy!==false);
+    setEditShowGifts(ev.show_gifts!==false);
+    setEditShowBank(ev.show_bank!==false);
   }
-  function stopEditingEvent(){setEditingEventId(null);setEditEventTitle("");setEditEventDateTime("");setEditEventLocation("");setEditEventDesc("");setEditEventVenueName("");setEditEventLocationUrl("");setEditEventGiftUrl1("");setEditEventGiftUrl2("");setEditEventBankAccount("");}
+  function stopEditingEvent(){setEditingEventId(null);setEditEventTitle("");setEditEventDateTime("");setEditEventLocation("");setEditEventDesc("");setEditEventVenueName("");setEditEventLocationUrl("");setEditEventGiftUrl1("");setEditEventGiftUrl2("");setEditEventBankAccount("");
+    setEditCoupleName("");setEditMainMessage("");setEditDressCodeText("");setEditKidsPolicyText("");setEditGiftLabel1("");setEditGiftLabel2("");setEditBankName("");setEditShowDressCode(true);setEditShowKidsPolicy(true);setEditShowGifts(true);setEditShowBank(true);
+  }
 
   async function updateEvent(){
     if(!editingEventId)return;
@@ -318,8 +345,19 @@ export default function DashboardPage() {
         venue_name:editEventVenueName.trim()||null,location_url:editEventLocationUrl.trim()||null,
         gift_url_1:editEventGiftUrl1.trim()||null,gift_url_2:editEventGiftUrl2.trim()||null,
         bank_account:editEventBankAccount.trim()||null,
+        couple_name:editCoupleName.trim()||null,
+        main_message:editMainMessage.trim()||null,
+        dress_code_text:editDressCodeText.trim()||null,
+        kids_policy_text:editKidsPolicyText.trim()||null,
+        gift_label_1:editGiftLabel1.trim()||null,
+        gift_label_2:editGiftLabel2.trim()||null,
+        bank_name:editBankName.trim()||null,
+        show_dress_code:editShowDressCode,
+        show_kids_policy:editShowKidsPolicy,
+        show_gifts:editShowGifts,
+        show_bank:editShowBank,
       }).eq("id",editingEventId)
-        .select("id,org_id,name,event_date,event_datetime,slug,description,location,venue_name,location_url,gift_url_1,gift_url_2,bank_account,created_at")
+        .select("id,org_id,name,event_date,event_datetime,slug,description,location,venue_name,location_url,gift_url_1,gift_url_2,bank_account,couple_name,main_message,dress_code_text,kids_policy_text,gift_label_1,gift_label_2,bank_name,show_dress_code,show_kids_policy,show_gifts,show_bank,created_at")
         .single();
       if(error){setErrorMsg(error.message);return;}
       setEvents(prev=>prev.map(e=>e.id===updated.id?updated:e));
@@ -537,6 +575,81 @@ export default function DashboardPage() {
                             </div>
                             <div><Label>Número de cuenta</Label><Input value={editEventBankAccount} onChange={e=>setEditEventBankAccount(e.target.value)}/></div>
                             <div><Label>Descripción</Label><Input value={editEventDesc} onChange={e=>setEditEventDesc(e.target.value)}/></div>
+
+                            {/* ── PERSONALIZACIÓN DE LA INVITACIÓN ── */}
+                            <div className="sm:col-span-2 rounded-xl border border-stone-200 bg-stone-50 p-4 mt-1">
+                              <p className="text-[10px] font-black uppercase tracking-widest text-stone-500 mb-3">Personalización de la invitación</p>
+                              <div className="grid sm:grid-cols-2 gap-3">
+
+                                <div className="sm:col-span-2">
+                                  <Label>Nombre de la pareja / festejado</Label>
+                                  <Input value={editCoupleName} onChange={e=>setEditCoupleName(e.target.value)} placeholder="Ej. Andy y Emilio"/>
+                                </div>
+
+                                <div className="sm:col-span-2">
+                                  <Label>Mensaje principal</Label>
+                                  <textarea className="w-full rounded-xl border border-stone-200 bg-white px-3.5 py-2.5 text-sm text-stone-800 placeholder:text-stone-300 outline-none transition focus:border-rose-300 focus:ring-2 focus:ring-rose-100 resize-none" rows={3} value={editMainMessage} onChange={e=>setEditMainMessage(e.target.value)} placeholder="Nos encantaría contar con tu presencia..."/>
+                                </div>
+
+                                {/* dress code toggle */}
+                                <div className="sm:col-span-2 flex items-center gap-3">
+                                  <button type="button" onClick={()=>setEditShowDressCode(v=>!v)} className={`relative inline-flex h-5 w-9 shrink-0 rounded-full border-2 border-transparent transition-colors ${editShowDressCode?"bg-rose-500":"bg-stone-200"}`}>
+                                    <span className={`inline-block h-4 w-4 rounded-full bg-white shadow transition-transform ${editShowDressCode?"translate-x-4":"translate-x-0"}`}/>
+                                  </button>
+                                  <Label>Mostrar Dress Code</Label>
+                                </div>
+                                {editShowDressCode&&(
+                                  <div>
+                                    <Label>Texto Dress Code</Label>
+                                    <Input value={editDressCodeText} onChange={e=>setEditDressCodeText(e.target.value)} placeholder="Formal"/>
+                                  </div>
+                                )}
+
+                                {/* kids policy toggle */}
+                                <div className="flex items-center gap-3">
+                                  <button type="button" onClick={()=>setEditShowKidsPolicy(v=>!v)} className={`relative inline-flex h-5 w-9 shrink-0 rounded-full border-2 border-transparent transition-colors ${editShowKidsPolicy?"bg-rose-500":"bg-stone-200"}`}>
+                                    <span className={`inline-block h-4 w-4 rounded-full bg-white shadow transition-transform ${editShowKidsPolicy?"translate-x-4":"translate-x-0"}`}/>
+                                  </button>
+                                  <Label>Política de niños</Label>
+                                </div>
+                                {editShowKidsPolicy&&(
+                                  <div>
+                                    <Label>Texto política niños</Label>
+                                    <Input value={editKidsPolicyText} onChange={e=>setEditKidsPolicyText(e.target.value)} placeholder="Sin niños"/>
+                                  </div>
+                                )}
+
+                                {/* gifts toggle */}
+                                <div className="sm:col-span-2 flex items-center gap-3">
+                                  <button type="button" onClick={()=>setEditShowGifts(v=>!v)} className={`relative inline-flex h-5 w-9 shrink-0 rounded-full border-2 border-transparent transition-colors ${editShowGifts?"bg-rose-500":"bg-stone-200"}`}>
+                                    <span className={`inline-block h-4 w-4 rounded-full bg-white shadow transition-transform ${editShowGifts?"translate-x-4":"translate-x-0"}`}/>
+                                  </button>
+                                  <Label>Mostrar mesas de regalos</Label>
+                                </div>
+                                {editShowGifts&&(
+                                  <>
+                                    <div><Label>Etiqueta Mesa #1</Label><Input value={editGiftLabel1} onChange={e=>setEditGiftLabel1(e.target.value)} placeholder="Liverpool"/></div>
+                                    <div><Label>Etiqueta Mesa #2</Label><Input value={editGiftLabel2} onChange={e=>setEditGiftLabel2(e.target.value)} placeholder="Amazon"/></div>
+                                  </>
+                                )}
+
+                                {/* bank toggle */}
+                                <div className="sm:col-span-2 flex items-center gap-3">
+                                  <button type="button" onClick={()=>setEditShowBank(v=>!v)} className={`relative inline-flex h-5 w-9 shrink-0 rounded-full border-2 border-transparent transition-colors ${editShowBank?"bg-rose-500":"bg-stone-200"}`}>
+                                    <span className={`inline-block h-4 w-4 rounded-full bg-white shadow transition-transform ${editShowBank?"translate-x-4":"translate-x-0"}`}/>
+                                  </button>
+                                  <Label>Mostrar cuenta bancaria</Label>
+                                </div>
+                                {editShowBank&&(
+                                  <div>
+                                    <Label>Nombre del banco</Label>
+                                    <Input value={editBankName} onChange={e=>setEditBankName(e.target.value)} placeholder="BANAMEX, BBVA, SPEI…"/>
+                                  </div>
+                                )}
+
+                              </div>
+                            </div>
+
                           </div>
                           <div className="mt-4 flex gap-2 justify-end">
                             <Btn variant="outline" size="sm" onClick={stopEditingEvent}>Cancelar</Btn>
