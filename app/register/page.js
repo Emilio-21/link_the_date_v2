@@ -1,4 +1,4 @@
-// app/login/page.js — con email + contraseña y redirect a /u/[tenant]/dashboard
+// app/login/page.js  — reemplaza el anterior
 'use client'
 
 import { useState } from 'react'
@@ -18,7 +18,7 @@ function Input({ className = '', ...props }) {
 }
 
 export default function LoginPage() {
-  const router   = useRouter()
+  const router = useRouter()
   const supabase = createClient()
 
   const [email, setEmail]       = useState('')
@@ -37,7 +37,7 @@ export default function LoginPage() {
       })
       if (authErr) throw authErr
 
-      // Buscar el tenant del usuario para redirigir a su dashboard
+      // Buscar el tenant del usuario para redirigir a su subdominio
       const { data: tenant } = await supabase
         .from('tenants')
         .select('subdomain')
@@ -45,17 +45,22 @@ export default function LoginPage() {
         .maybeSingle()
 
       if (tenant?.subdomain) {
-        router.replace(`/u/${tenant.subdomain}/dashboard`)
+        // En producción redirige al subdominio
+        const isProd = window.location.hostname !== 'localhost'
+        if (isProd) {
+          const base = window.location.origin.replace(/^https?:\/\/[^.]+/, '')
+          window.location.href = `https://${tenant.subdomain}${base}/dashboard`
+        } else {
+          // En local, solo va al dashboard (no hay subdominios reales en localhost)
+          router.replace('/dashboard')
+        }
       } else {
-        // fallback: usuario sin tenant (caso borde)
         router.replace('/dashboard')
       }
     } catch (err) {
-      setError(
-        err.message === 'Invalid login credentials'
-          ? 'Email o contraseña incorrectos'
-          : err.message
-      )
+      setError(err.message === 'Invalid login credentials'
+        ? 'Email o contraseña incorrectos'
+        : err.message)
     } finally {
       setLoading(false)
     }
@@ -81,13 +86,26 @@ export default function LoginPage() {
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
               <Label>Email</Label>
-              <Input type="email" value={email} onChange={e => setEmail(e.target.value)}
-                placeholder="tu@email.com" disabled={loading} required />
+              <Input
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                placeholder="tu@email.com"
+                disabled={loading}
+                required
+              />
             </div>
+
             <div>
               <Label>Contraseña</Label>
-              <Input type="password" value={password} onChange={e => setPassword(e.target.value)}
-                placeholder="••••••••" disabled={loading} required />
+              <Input
+                type="password"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                placeholder="••••••••"
+                disabled={loading}
+                required
+              />
             </div>
 
             {error && (
@@ -97,8 +115,11 @@ export default function LoginPage() {
               </div>
             )}
 
-            <button type="submit" disabled={loading || !email.trim() || !password}
-              className="w-full rounded-xl bg-rose-500 px-4 py-2.5 text-sm font-bold text-white shadow-sm shadow-rose-200 hover:bg-rose-600 active:scale-[.98] transition-all disabled:opacity-40 disabled:cursor-not-allowed">
+            <button
+              type="submit"
+              disabled={loading || !email.trim() || !password}
+              className="w-full rounded-xl bg-rose-500 px-4 py-2.5 text-sm font-bold text-white shadow-sm shadow-rose-200 hover:bg-rose-600 active:scale-[.98] transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+            >
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
                   <svg className="animate-spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
