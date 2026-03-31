@@ -19,9 +19,17 @@ export async function GET(_req, { params }) {
 
     const { data: event, error } = await supabase
       .from("events")
-      .select(
-        "id,org_id,name,event_date,event_datetime,slug,description,location,venue_name,location_url,gift_url_1,gift_url_2,bank_account,created_at"
-      )
+      .select(`
+        id, org_id, name, event_date, event_datetime, slug,
+        description, location, venue_name, location_url,
+        gift_url_1, gift_url_2, bank_account,
+        couple_name, main_message,
+        dress_code_text, kids_policy_text,
+        gift_label_1, gift_label_2,
+        bank_name,
+        show_dress_code, show_kids_policy, show_gifts, show_bank,
+        created_at
+      `)
       .eq("slug", slug)
       .single();
 

@@ -33,8 +33,24 @@ export function Plantilla({ event, guest, rsvp }) {
   const eventDate      = event?.event_date      || event?.date        || "";
   const venueName      = event?.venue_name      || event?.location_name || "";
   const city           = event?.city            || event?.location    || "";
-  const time           = event?.time            || "";
-  const ampm           = event?.ampm            || "";
+  // Extraer hora de event_datetime (ej. "2026-08-21T17:00:00Z" → "5" y "pm")
+  const rawTime = (() => {
+    const dt = event?.event_datetime;
+    if (!dt) return { time: "", ampm: "" };
+    try {
+      const d = new Date(dt);
+      let h = d.getHours(); // hora local del servidor (UTC)
+      // Convertir a hora Mexico City (UTC-6)
+      // Si el datetime viene en UTC, ajusta según tu zona
+      const ampm = h >= 12 ? "pm" : "am";
+      h = h % 12 || 12;
+      const m = d.getMinutes();
+      const time = m === 0 ? String(h) : `${h}:${String(m).padStart(2, "0")}`;
+      return { time, ampm };
+    } catch { return { time: "", ampm: "" }; }
+  })();
+  const time           = event?.time  || rawTime.time  || "";
+  const ampm           = event?.ampm  || rawTime.ampm  || "";
   const mapUrl         = event?.map_url         || event?.location_url || null;
   const gift1          = event?.gift_url_1      || null;
   const gift2          = event?.gift_url_2      || null;
